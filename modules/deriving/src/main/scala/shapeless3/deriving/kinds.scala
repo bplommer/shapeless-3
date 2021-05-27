@@ -52,7 +52,7 @@ object K0 {
   }
 
   type Head[T] = T match { case h *: t => h }
-  type Tail[T] = T match { case h *: t => t }
+  type Tail[T] <: Tuple = T match { case h *: t => t }
 
   type LiftP[F[_], T] <: Tuple =
     T match {
@@ -115,11 +115,11 @@ object K0 {
     @deprecated("use inject", "3.0.2")
     inline def project[Acc](p: Int)(i: Acc)(f: [t] => (Acc, F[t]) => (Acc, Option[t])): (Acc, Option[T]) =
       inst.erasedProject(p)(i)(f.asInstanceOf).asInstanceOf
-    inline def fold[R](x: T)(f: [t] => (F[t], t) => R): R =
+    inline def fold[R](x: T)(f: [t <: T] => (F[t], t) => R): R =
       inst.erasedFold(x)(f.asInstanceOf).asInstanceOf
-    inline def fold2[R](x: T, y: T)(a: => R)(f: [t] => (F[t], t, t) => R): R =
+    inline def fold2[R](x: T, y: T)(a: => R)(f: [t <: T] => (F[t], t, t) => R): R =
       inst.erasedFold2(x, y)(a.asInstanceOf)(f.asInstanceOf).asInstanceOf
-    inline def fold2[R](x: T, y: T)(g: (Int, Int) => R)(f: [t] => (F[t], t, t) => R): R =
+    inline def fold2[R](x: T, y: T)(g: (Int, Int) => R)(f: [t <: T] => (F[t], t, t) => R): R =
       inst.erasedFold2f(x, y)(g.asInstanceOf)(f.asInstanceOf).asInstanceOf
 
   inline given mkInstances[F[_], T](using gen: Generic[T]): Instances[F, T] =
@@ -154,7 +154,7 @@ object K1 {
   def CoproductInstances[F[_[_]], T[_]](using inst: CoproductInstances[F, T]): inst.type = inst
 
   type Head[T <: [X] =>> Any, A] = T[A] match { case h *: t => h }
-  type Tail[T <: [X] =>> Any, A] = T[A] match { case h *: t => t }
+  type Tail[T <: [X] =>> Any, A] <: Tuple = T[A] match { case h *: t => t }
 
   type LiftP[F[_[_]], T <: [X] =>> Any] <: Tuple =
     T[Any] match {
@@ -210,11 +210,11 @@ object K1 {
       inst.erasedProject(t)(p)(f.asInstanceOf).asInstanceOf
 
   extension [F[_[_]], T[_]](inst: CoproductInstances[F, T])
-    inline def fold[A, R](x: T[A])(f: [t[_]] => (F[t], t[A]) => R): R =
+    inline def fold[A, R](x: T[A])(f: [t[x] <: T[x]] => (F[t], t[A]) => R): R =
       inst.erasedFold(x)(f.asInstanceOf).asInstanceOf
-    inline def fold2[A, B, R](x: T[A], y: T[B])(a: => R)(f: [t[_]] => (F[t], t[A], t[B]) => R): R =
+    inline def fold2[A, B, R](x: T[A], y: T[B])(a: => R)(f: [t[x] <: T[x]] => (F[t], t[A], t[B]) => R): R =
       inst.erasedFold2(x, y)(a.asInstanceOf)(f.asInstanceOf).asInstanceOf
-    inline def fold2[A, B, R](x: T[A], y: T[B])(g: (Int, Int) => R)(f: [t[_]] => (F[t], t[A], t[B]) => R): R =
+    inline def fold2[A, B, R](x: T[A], y: T[B])(g: (Int, Int) => R)(f: [t[x] <: T[x]] => (F[t], t[A], t[B]) => R): R =
       inst.erasedFold2f(x, y)(g.asInstanceOf)(f.asInstanceOf).asInstanceOf
 
   inline given mkInstances[F[_[_]], T[_]](using gen: Generic[T]): Instances[F, T] =
@@ -252,7 +252,7 @@ object K11 {
   type Const[c] = [f[_]] =>> c
 
   type Head[T <: [G[_]] =>> Any, A[_]] = T[A] match { case h *: t => h }
-  type Tail[T <: [G[_]] =>> Any, A[_]] = T[A] match { case h *: t => t }
+  type Tail[T <: [G[_]] =>> Any, A[_]] <: Tuple = T[A] match { case h *: t => t }
 
   type LiftP[F[_[_[_]]], T <: [G[_]] =>> Any] <: Tuple =
     T[Option] match {
@@ -350,7 +350,7 @@ object K2 {
   type Const[c] = [t, u] =>> c
 
   type Head[T <: [X, Y] =>> Any, A, B] = T[A, B] match { case h *: t => h }
-  type Tail[T <: [X, Y] =>> Any, A, B] = T[A, B] match { case h *: t => t }
+  type Tail[T <: [X, Y] =>> Any, A, B] <: Tuple = T[A, B] match { case h *: t => t }
 
   type LiftP[F[_[_, _]], T <: [X, Y] =>> Any] <: Tuple =
     T[Any, Any] match {
